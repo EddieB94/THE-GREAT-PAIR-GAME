@@ -63,7 +63,7 @@ h1 {
 
 .hidden:after {
 	background: #000;
-	transition: all 600ms 500ms;
+	transition: all 600ms 400ms;
 }
 
 .show {

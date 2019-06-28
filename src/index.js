@@ -1,42 +1,44 @@
 import "./style.css";
+//import game from "./gameConfig.js";
+import {
+	shuffle,
+	checkMedia,
+} from "./methods.js";
 
-window.openedSquare = [];
-//var keywordImage = keywordPrompt();
-var model = document.querySelector(".popup");
-var finalTime = "";
-var finalMoves = "";
-var gameBoard = document.body.querySelector("#gameBoard");
-let gridWidth = 4;
+export {
+	openSquare,
+};
 
-var noSquares = Math.pow(gridWidth, 2);
-var levels = [{
-
-},
-{
-
-}, 
-{
-
-}]
-
-var levelOne = new Object();
-var levelTwo = new Object();
-var levelThree = new Object();
-var moves = 0;
-var bestMoves = document.querySelector('#bestMoves').innerHTML;
-var bestTime = document.querySelector('.bestTime').innerHTML;
-var counter = document.body.querySelector(".moves");
+var game = require( "./gameConfig.js" );
+var openedSquare = [];
+var matchedSquares = [];
+var imageGallery = [];
 var square = [];//gameBoard.querySelectorAll("div");
 var squares = [];
+var interval;
+var finalTime = "";
+var finalMoves = "";
+var model = document.querySelector(".popup");
+var gameBoard = document.body.querySelector("#gameBoard");
+var currentLevel = "currentLevel"; //game.state.currentLevel;
+let easyLevel =  1;//game.levels.one.id;
+let gridWidth = game.levels.one.gridWidth;
+var targetMoves = document.querySelector('#targetMoves').innerHTML;
+var targetTime = document.querySelector('#targetTime').innerHTML;
 const deck = document.querySelector("#squareImageGallery");
 var restartBtn = document.querySelector("#restartBtn");
-// var imageBtn = document.querySelector("#imageBtn");
-window.matchedSquares = [];
-window.imageGallery = [];
-
-
+//timer
+var second = 0;
+var minute = 0;
+var hour = 0;
+var timer = document.querySelector(".timer");
+var moves = 0;
+var counter = document.body.querySelector(".moves");
+var noSquares = Math.pow(gridWidth, 2);
 const wrapper = document.body;
+var docStyleVar = document.documentElement.style;
 
+//add click events to all buttons
 wrapper.addEventListener('click', (event) => {
   const isButton = event.target.nodeName === 'BUTTON';
   var action = event.target.dataset.action;
@@ -54,58 +56,56 @@ wrapper.addEventListener('click', (event) => {
 	};
 })
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//set levelstates
+//on level complete go to next level
 
 function closeOverlay() {
 	document.querySelector('body').classList.remove('complete');
+};
+
+function playAgain(){
+	restartMoves();
+	restartTimer();
+};
+
+function gameWon(){
+		document.body.classList.add("complete");
+		model.classList.add("show");
+		clearInterval(interval);
+		finalTime = timer.innerHTML;
+		finalMoves = moves;
+		if (finalMoves < targetMoves){
+			//targetMoves = finalMoves;
+			//document.querySelector("#targetMoves").innerHTML = finalMoves;
+		}
+		if (finalTime < targetTime){
+			//targetTime = finalTime;
+			//document.querySelector(".targetTime").innerHTML = finalTime;
+		}
 }
 
-function matched(){
-	//what happens when a pair is matched
-	for(i = 0; i<2;i++){
-		var i = i;
-		openedSquare[i].classList.add("disabled");
-	}
-	openedSquare = [];
+function restartGame(){
+	restartMoves();
+	restartTimer();
+	document.body.classList.remove("complete");
+	emptyArrays();
+	startGame();
 };
 
-function unmatched(){
-	//what happens when a pair guess is incorrect
-	requestAnimationFrame(function(){
-		openedSquare[0].classList.add("hidden");
-	    openedSquare[1].classList.add("hidden");
-	    openedSquare = [];
-	});
-};
+//empty arrays
+function emptyArrays(){
+	openedSquare = [];
+	matchedSquares = [];
+	imageGallery = [];
+	square = [];
+	squares = [];
+}
 
 function restartMoves(){
 	var counter = document.body.querySelector(".moves");
 	moves =0;
 	counter.innerHTML = moves;
 };
-
-//timer
-var second = 0;
-var minute = 0;
-var hour = 0;
-var timer = document.querySelector(".timer");
-var interval;
 
 function startTimer(){
 	var timer = document.querySelector(".timer");
@@ -132,41 +132,23 @@ function restartTimer(){
 	clearInterval(interval);
 };
 
-function playAgain(){
-	restartMoves();
-	restartTimer();
-};
-
-function gameWon(){
-		document.body.classList.add("complete");
-		model.classList.add("show");
-		clearInterval(interval);
-		finalTime = timer.innerHTML;
-		finalMoves = moves;
-		if (finalMoves < bestMoves){
-			bestMoves = finalMoves;
-			document.querySelector("#bestMoves").innerHTML = finalMoves;
-		}
-		bestTime = finalTime;
-		document.querySelector(".bestTime").innerHTML = finalTime;
-}
-
-function restartGame(){
-	restartMoves();
-	restartTimer();
-	document.body.classList.remove("complete");
+function matched(){
+	//what happens when a pair is matched
+	for(i = 0; i<2;i++){
+		var i = i;
+		openedSquare[i].classList.add("disabled");
+	};
 	openedSquare = [];
-	matchedSquares = [];
-	imageGallery = [];
-	square = [];
-	squares = [];
-	startGame();
 };
 
-// function keywordPrompt(){
-// 	prompt("what images would you like to use?");
-// 	restartGame();
-// }
+function unmatched(){
+	//what happens when a pair guess is incorrect
+	requestAnimationFrame(function(){
+		openedSquare[0].classList.add("hidden");
+	    openedSquare[1].classList.add("hidden");
+	    openedSquare = [];
+	});
+};
 
 function openSquare(){
 	if(this.classList.contains("hidden")){
@@ -194,99 +176,54 @@ function openSquare(){
 	};
 };
 
-	// get 50 images
-	function imageGenerator(){
-		for(i=0;i<noSquares/2;i++){
-			var i = i;
-			imageGallery.push("https://picsum.photos/id/"+(i+400)+"/300/300");
-		};
-	}
-
-function shuffle(array) {
-    var currentIndex = array.length, temporaryValue, randomIndex;
-
-    while (currentIndex !== 0) {
-        randomIndex = Math.floor(Math.random() * array.length);
-        currentIndex -= 1;
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
-    }
-
-    return array;
-};
-
+// get 50 images
+function imageGenerator(){
+	for(i=0;i<noSquares/2;i++){
+		var i = i;
+		imageGallery.push("https://picsum.photos/id/"+(i+400)+"/300/300");
+	};
+}
 
 function startGame() {
-model.classList.remove("show");
-	openedSquare = [];
-	matchedSquares = [];
-	imageGallery = [];
-	square = [];
-	squares = [];
-imageGenerator();
-var c = 0;
-
-//generate gameBoard
+	//localStorage.setItem("currentLevel", game.levels[easyLevel]);
+	model.classList.remove("show");
+	emptyArrays();
+	imageGenerator();
+	var c = 0;
+	//generate and shuffle gameBoard
 	for(i = 0; i < noSquares; i++){
-  		var i = i;
-
-  		if(c === Math.ceil(noSquares/2)-1){
-  			c = 0;
-  		}	else {
-  			c++;
-  		}
-
-
-
-  		var newSquare = "<div class='generatedSquare' type="+c+" style='background-image: url("+imageGallery[c]+")'></div>";
-  		square.push(newSquare);
+	  	var i = i;
+	  	if(c === Math.ceil(noSquares/2)-1){
+	  		c = 0;
+	  	}	else {
+	  		c++;
+	  	}
+	  	var newSquare = "<div class='generatedSquare' type="+c+" style='background-image: url("+imageGallery[c]+")'></div>";
+	  	square.push(newSquare);
 	}
 
 	//shuffle square array
 	var shuffled = shuffle(square);
 	var output = "";
-
 	for(i=0;i < shuffled.length;i++){
- 		if (i%gridWidth === 0){
- 			output += "<div class='clearFix'></div>"
-  		}
-		output += shuffled[i];
-	}
-	
+	 	if (i%gridWidth === 0){
+	 		output += "<div class='clearFix'></div>"
+	  	}
+			output += shuffled[i];
+	};
 	gameBoard.innerHTML = output;
-	document.documentElement.style.setProperty('--width', Math.floor((100-((0.5*2)*gridWidth))/gridWidth)  + "%");
-	document.documentElement.style.setProperty('--padding-bottom', Math.floor((100-((0.5*2)*gridWidth))/gridWidth)  + "%");
+	docStyleVar.setProperty('--width', Math.floor((100-((0.5*2)*gridWidth))/gridWidth)  + "%");
+	docStyleVar.setProperty('--padding-bottom', Math.floor((100-((0.5*2)*gridWidth))/gridWidth)  + "%");
 	squares = gameBoard.querySelectorAll(".generatedSquare");
 
 	for(i = 0; i < noSquares; i++){
-	// 	//add image/icon
-	// 	square[i].style.backgroundImage = "url("+imageGallery[Math.floor(i / 2)]+")";
-		squares[i].classList.add('square');
-		squares[i].classList.add('hidden');
-		squares[i].classList.remove('disabled');
-	}
-
-	
-	  if(/iP(hone|ad)/.test(window.navigator.userAgent)) {
-	    var elements = document.querySelectorAll('.square');
-	    
-	    for(var i = 0; i < elements.length; i++) {
-	      elements[i].addEventListener('touchstart', openSquare);
-	    }
-	  } else {
-	  	var elements = document.querySelectorAll('.square');
-	  	for(var i = 0; i < elements.length; i++) {
-		  	elements[i].addEventListener('click', openSquare);
-	  	}
-	  }
-	  	
-	
-
-	// restartBtn.addEventListener('click', restartGame);
-	//imageBtn.addEventListener('click', keywordPrompt);
-
-  return gameBoard;
+			squares[i].classList.add("square");
+			squares[i].classList.add("hidden");
+			squares[i].classList.remove("disabled");
+	};
+	//check if iphone or ipad or not, and add touch or click events respectively
+	checkMedia();
+		return gameBoard;
 };
 
 document.body.appendChild(startGame());
