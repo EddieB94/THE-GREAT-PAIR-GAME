@@ -16,3 +16,6 @@ will run ESLint on all javascript files inside the repo using the eslint config 
 npm run build
 
 will compile the html and javascript files from the src/ directory into a build directory in which you will find index.html and main.js, please open the index.html into any browser of your choosing.
+
+pairs/
+the cordova project dir, run 'cordova prepare' to build the files required for xCode to simulate the app.
